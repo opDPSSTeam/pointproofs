@@ -11,7 +11,7 @@ pub use param::StructuredReferenceString;
 pub use param::VerifierParam;
 
 pub struct Commitment<E: PairingEngine, const N: usize> {
-    commitment: E::G1Projective,
+    pub commitment: E::G1Projective,
 }
 
 pub trait CommitmentScheme {

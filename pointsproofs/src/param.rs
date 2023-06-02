@@ -17,9 +17,9 @@ use rayon::iter::ParallelIterator;
 /// - t = e(alpha^{n+1} * G, H)
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct StructuredReferenceString<E: PairingEngine, const N: usize> {
-    pub(crate) g: Vec<E::G1Affine>,
-    pub(crate) h: Vec<E::G2Affine>,
-    pub(crate) t: E::Fqk,
+    pub g: Vec<E::G1Affine>,
+    pub h: Vec<E::G2Affine>,
+    pub t: E::Fqk,
 }
 
 /// The prover parameter is a reference to the G1 coordinates of SRS:
