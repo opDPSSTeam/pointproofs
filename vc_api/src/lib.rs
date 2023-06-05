@@ -15,31 +15,33 @@ use pointproof::StructuredReferenceString;
 use pointproof::VerifierParam;
 use rand_chacha::ChaCha20Rng;
 
-pub fn gen_params_f1(rng: &mut ChaCha20Rng) -> StructuredReferenceString<Bls12_381, 4> {
-    StructuredReferenceString::<Bls12_381, 4>::new_srs_for_testing(rng)
+pub fn gen_params<const N: usize>(
+    rng: &mut ChaCha20Rng
+) -> StructuredReferenceString<Bls12_381, N> {
+    StructuredReferenceString::<Bls12_381, N>::new_srs_for_testing(rng)
 }
 
-pub fn commit_f1(
-    srs: StructuredReferenceString<Bls12_381, 4>,
+pub fn commit<const N: usize>(
+    srs: StructuredReferenceString<Bls12_381, N>,
     message: Vec<Fr>,
 ) -> <Bls12_381 as PairingEngine>::G1Affine {
-    let prover_param: ProverParam<Bls12_381, 4> = (&srs).into();
-    Commitment::<Bls12_381, 4>::commit(&prover_param, &message)
+    let prover_param: ProverParam<Bls12_381, N> = (&srs).into();
+    Commitment::<Bls12_381, N>::commit(&prover_param, &message)
         .commitment
         .into()
 }
 
-pub fn open_f1(
-    srs: StructuredReferenceString<Bls12_381, 4>,
+pub fn open<const N: usize>(
+    srs: StructuredReferenceString<Bls12_381, N>,
     message: Vec<Fr>,
     pos: usize,
 ) -> <Bls12_381 as PairingEngine>::G1Affine {
-    let prover_param: ProverParam<Bls12_381, 4> = (&srs).into();
-    Commitment::<Bls12_381, 4>::open(&prover_param, &message, pos).into()
+    let prover_param: ProverParam<Bls12_381, N> = (&srs).into();
+    Commitment::<Bls12_381, N>::open(&prover_param, &message, pos).into()
 }
 
-pub fn verify_f1(
-    srs: StructuredReferenceString<Bls12_381, 4>,
+pub fn verify<const N: usize>(
+    srs: StructuredReferenceString<Bls12_381, N>,
     commitment: <Bls12_381 as PairingEngine>::G1Affine,
     message: Fr,
     pos: usize,
@@ -48,7 +50,7 @@ pub fn verify_f1(
     let commitment = Commitment {
         commitment: commitment.into(),
     };
-    let verifier_param: VerifierParam<Bls12_381, 4> = (&srs).into();
+    let verifier_param: VerifierParam<Bls12_381, N> = (&srs).into();
     commitment.verify(&verifier_param, &message, pos, &witness.into())
 }
 
@@ -257,7 +259,7 @@ fn messages_to_str(messages: Vec<Fr>) -> String {
     res
 }
 
-fn str_to_srs(s: &str) -> StructuredReferenceString<Bls12_381, 4> {
+fn str_to_srs<const N: usize>(s: &str) -> StructuredReferenceString<Bls12_381, N> {
     let strings = s.split_ascii_whitespace().collect::<Vec<&str>>();
     assert!(strings.len() == 3);
     let g_str = strings[0]
@@ -298,7 +300,7 @@ fn str_to_srs(s: &str) -> StructuredReferenceString<Bls12_381, 4> {
     }
 }
 
-fn srs_to_str(srs: StructuredReferenceString<Bls12_381, 4>) -> String {
+fn srs_to_str<const N: usize>(srs: StructuredReferenceString<Bls12_381, N>) -> String {
     let mut res = String::new();
     for i in srs.g {
         res.push_str(&g1_to_str(i));
@@ -332,7 +334,7 @@ mod tests {
     fn test_srs_str() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
         for _ in 0..10 {
-            let srs = gen_params_f1(&mut rng);
+            let srs = gen_params::<4>(&mut rng);
             let s = srs_to_str(srs.clone());
             let srs1 = str_to_srs(s.as_str());
             assert_eq!(srs, srs1);
@@ -360,27 +362,27 @@ mod tests {
     fn it_works() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
         for _ in 0..10 {
-            let srs = gen_params_f1(&mut rng);
+            let srs = gen_params::<4>(&mut rng);
             let srs_str = srs_to_str(srs);
-            let srs = str_to_srs(&srs_str);
+            let srs = str_to_srs::<4>(&srs_str);
             let messages = (0..4)
                 .map(|_| <Bls12_381 as PairingEngine>::Fr::rand(&mut rng))
                 .collect::<Vec<Fp256<FrParameters>>>();
             let messages_str = messages_to_str(messages.clone());
             let messages = str_to_messages(&messages_str);
-            let commitment = commit_f1(srs, messages);
+            let commitment = commit(srs, messages);
             let commmit_str = g1_to_str(commitment);
 
-            let srs = str_to_srs(&srs_str);
+            let srs = str_to_srs::<4>(&srs_str);
             let messages = str_to_messages(&messages_str);
             let open_value_str = message_to_str(messages[2]);
-            let witness = open_f1(srs, messages, 2);
+            let witness = open(srs, messages, 2);
             let witness_str = g1_to_str(witness);
-            let srs = str_to_srs(&srs_str);
+            let srs = str_to_srs::<4>(&srs_str);
             let commitment = str_to_g1(&commmit_str);
             let witness = str_to_g1(&witness_str);
             let open_value = str_to_message(&open_value_str);
-            assert!(verify_f1(srs, commitment, open_value, 2, witness))
+            assert!(verify(srs, commitment, open_value, 2, witness))
         }
     }
 }
