@@ -5,9 +5,7 @@ extern crate criterion;
 
 use std::ops::Div;
 
-use ark_bls12_377::Bls12_377;
 use ark_bls12_381::Bls12_381;
-use ark_bn254::Bn254;
 use ark_ec::PairingEngine;
 use ark_poly::univariate::DensePolynomial;
 use ark_poly::UVPolynomial;
