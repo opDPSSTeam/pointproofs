@@ -5,16 +5,20 @@ extern crate libc;
 use std::ffi::{CStr, CString};
 
 #[no_mangle]
-pub extern "C" fn rust_demo(
-    name: *const libc::c_char,
-    num: libc::c_int
+pub extern "C" fn fr_plus(
+    s1: *const libc::c_char,
+    s2: *const libc::c_char
 ) -> *const libc::c_char {
-    let cstr_name = unsafe {
-        CStr::from_ptr(name)
+    let s1_str = unsafe {
+        CStr::from_ptr(s1).to_str().unwrap()
     };
-    let mut str_name = cstr_name.to_str().unwrap().to_string();
-    str_name.push_str(&num.to_string());
-    CString::new(str_name).unwrap().into_raw()
+    let s2_str = unsafe {
+        CStr::from_ptr(s2).to_str().unwrap()
+    };
+    let f1 = util::str_to_message(s1_str);
+    let f2 = util::str_to_message(s2_str);
+    let res = util::message_to_str(f1 + f2);
+    CString::new(res).unwrap().into_raw()
 }
 
 #[cfg(test)]
