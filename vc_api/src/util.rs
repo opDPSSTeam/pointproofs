@@ -216,7 +216,7 @@ pub fn messages_to_str(messages: Vec<Fr>) -> String {
 
 pub fn str_to_srs<const N: usize>(s: &str) -> StructuredReferenceString<Bls12_381, N> {
     let strings = s.split_ascii_whitespace().collect::<Vec<&str>>();
-    assert!(strings.len() == 3);
+    assert_eq!(strings.len(), 3);
     let g_str = strings[0]
         .split(";")
         .filter(|&x| x.len() > 0)

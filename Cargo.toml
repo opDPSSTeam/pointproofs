@@ -1,6 +1,5 @@
 [workspace]
 members = [
     "pointsproofs",
-    "vc_api",
-    "rust-demo"
+    "vc_api"
 ]

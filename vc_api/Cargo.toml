@@ -5,6 +5,9 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[lib]
+crate-type = ["cdylib"]
+
 [dependencies]
 pointproof = { path = "../pointsproofs" }
 ark-ec = { version = "0.3.0", default-features = false }
@@ -15,3 +18,5 @@ ark-bls12-381 = { version = "0.3.0", default-features = false, features = ["curv
 
 rand_chacha = "0.3.0"
 base64 = "0.12"
+libc = "0.2"
+

@@ -1,7 +1,7 @@
 package main
 
 /*
-#cgo LDFLAGS: -L./target/release -lrust_demo
+#cgo LDFLAGS: -L./target/release -lvc_api
 #include <stdlib.h>
 #include "./lib/rustdemo.h"
 */
