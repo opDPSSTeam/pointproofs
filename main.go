@@ -10,6 +10,7 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	kbls "github.com/kilic/bls12-381"
+	"unsafe"
 )
 
 func SubModFr(dst *kbls.Fr, a, b *kbls.Fr) {
@@ -20,40 +21,47 @@ func AddModFr(dst *kbls.Fr, a, b *kbls.Fr) {
 	(*kbls.Fr)(dst).Add((*kbls.Fr)(a), (*kbls.Fr)(b))
 }
 
+func frToString(fr *kbls.Fr) string {
+	bytes := fr.ToBytes()
+	for i, j := 0, len(bytes)-1; i < j; i, j = i+1, j-1 {
+		bytes[i], bytes[j] = bytes[j], bytes[i]
+	}
+	return base64.StdEncoding.EncodeToString(bytes)
+}
+
+func stringToFr(s string) kbls.Fr {
+	bytes, _ := base64.StdEncoding.DecodeString(s)
+	for i, j := 0, len(bytes)-1; i < j; i, j = i+1, j-1 {
+		bytes[i], bytes[j] = bytes[j], bytes[i]
+	}
+	fr := kbls.Fr{}
+	fr.FromBytes(bytes)
+	return fr
+}
+
 func main() {
 	fr1 := kbls.Fr{}
 	if _, err := fr1.Rand(rand.Reader); err != nil {
 		panic("")
 	}
 	fr1.ToRed()
-	bytes := fr1.ToBytes()
-	for i, j := 0, len(bytes)-1; i < j; i, j = i+1, j-1 {
-		bytes[i], bytes[j] = bytes[j], bytes[i]
-	}
+	s1 := frToString(&fr1)
 
-	s1 := base64.StdEncoding.EncodeToString(bytes)
 	fr2 := kbls.Fr{}
 	if _, err := fr2.Rand(rand.Reader); err != nil {
 		panic("")
 	}
 	fr2.ToRed()
-	bytes = fr2.ToBytes()
-	for i, j := 0, len(bytes)-1; i < j; i, j = i+1, j-1 {
-		bytes[i], bytes[j] = bytes[j], bytes[i]
-	}
+	s2 := frToString(&fr2)
 
-	s2 := base64.StdEncoding.EncodeToString(bytes)
 	input1 := C.CString(s1)
-	//defer C.free(unsafe.Pointer(input))
-	//
+	defer C.free(unsafe.Pointer(input1))
 	input2 := C.CString(s2)
+	defer C.free(unsafe.Pointer(input2))
+
 	output := C.GoString(C.fr_plus(input1, input2))
-	bytes, _ = base64.StdEncoding.DecodeString(output)
-	for i, j := 0, len(bytes)-1; i < j; i, j = i+1, j-1 {
-		bytes[i], bytes[j] = bytes[j], bytes[i]
-	}
-	fr3 := kbls.Fr{}
-	fr3.FromBytes(bytes)
+	fr3 := stringToFr(output)
+
 	AddModFr(&fr1, &fr1, &fr2)
 	if !fr3.Equal(&fr1) {
 		panic("")
