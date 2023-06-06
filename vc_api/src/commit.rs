@@ -1,13 +1,13 @@
+use super::util;
 use ark_bls12_381::Bls12_381;
-use ark_bls12_381::Fr;
-use ark_ec::PairingEngine;
+
+
+
 use pointproof::Commitment;
 use pointproof::CommitmentScheme;
 use pointproof::ProverParam;
 use pointproof::StructuredReferenceString;
 use pointproof::VerifierParam;
-use ark_std::rand::Rng;
-use super::util;
 
 pub fn gen_params<const N: usize>() -> String {
     let mut rng = rand::thread_rng();
@@ -15,10 +15,7 @@ pub fn gen_params<const N: usize>() -> String {
     util::srs_to_str(srs)
 }
 
-pub fn commit<const N: usize>(
-    srs: &str,
-    messages: &str,
-) -> String {
+pub fn commit<const N: usize>(srs: &str, messages: &str) -> String {
     let srs = util::str_to_srs(srs);
     let prover_param: ProverParam<Bls12_381, N> = (&srs).into();
     let messages = util::str_to_messages(messages);
@@ -28,11 +25,7 @@ pub fn commit<const N: usize>(
     util::g1_to_str(commitment)
 }
 
-pub fn open<const N: usize>(
-    srs: &str,
-    messages: &str,
-    pos: usize,
-) -> String {
+pub fn open<const N: usize>(srs: &str, messages: &str, pos: usize) -> String {
     let srs = util::str_to_srs(srs);
     let prover_param: ProverParam<Bls12_381, N> = (&srs).into();
     let messages = util::str_to_messages(messages);
