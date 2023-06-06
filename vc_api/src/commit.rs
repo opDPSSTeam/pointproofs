@@ -7,42 +7,53 @@ use pointproof::ProverParam;
 use pointproof::StructuredReferenceString;
 use pointproof::VerifierParam;
 use ark_std::rand::Rng;
+use super::util;
 
-pub fn gen_params<R: Rng, const N: usize>(
-    rng: &mut R
-) -> StructuredReferenceString<Bls12_381, N> {
-    StructuredReferenceString::<Bls12_381, N>::new_srs_for_testing(rng)
+pub fn gen_params<const N: usize>() -> String {
+    let mut rng = rand::thread_rng();
+    let srs = StructuredReferenceString::<Bls12_381, N>::new_srs_for_testing(&mut rng);
+    util::srs_to_str(srs)
 }
 
 pub fn commit<const N: usize>(
-    srs: StructuredReferenceString<Bls12_381, N>,
-    messages: Vec<Fr>,
-) -> <Bls12_381 as PairingEngine>::G1Affine {
+    srs: &str,
+    messages: &str,
+) -> String {
+    let srs = util::str_to_srs(srs);
     let prover_param: ProverParam<Bls12_381, N> = (&srs).into();
-    Commitment::<Bls12_381, N>::commit(&prover_param, &messages)
+    let messages = util::str_to_messages(messages);
+    let commitment = Commitment::<Bls12_381, N>::commit(&prover_param, &messages)
         .commitment
-        .into()
+        .into();
+    util::g1_to_str(commitment)
 }
 
 pub fn open<const N: usize>(
-    srs: StructuredReferenceString<Bls12_381, N>,
-    messages: Vec<Fr>,
+    srs: &str,
+    messages: &str,
     pos: usize,
-) -> <Bls12_381 as PairingEngine>::G1Affine {
+) -> String {
+    let srs = util::str_to_srs(srs);
     let prover_param: ProverParam<Bls12_381, N> = (&srs).into();
-    Commitment::<Bls12_381, N>::open(&prover_param, &messages, pos).into()
+    let messages = util::str_to_messages(messages);
+    let witness = Commitment::<Bls12_381, N>::open(&prover_param, &messages, pos).into();
+    util::g1_to_str(witness)
 }
 
 pub fn verify<const N: usize>(
-    srs: StructuredReferenceString<Bls12_381, N>,
-    commitment: <Bls12_381 as PairingEngine>::G1Affine,
-    message: Fr,
+    srs: &str,
+    commitment: &str,
+    message: &str,
     pos: usize,
-    witness: <Bls12_381 as PairingEngine>::G1Affine,
+    witness: &str,
 ) -> bool {
+    let srs = util::str_to_srs(srs);
     let commitment = Commitment {
-        commitment: commitment.into(),
+        commitment: util::str_to_g1(commitment).into(),
     };
+    let message = util::str_to_message(message);
+    let witness = util::str_to_g1(witness);
+
     let verifier_param: VerifierParam<Bls12_381, N> = (&srs).into();
     commitment.verify(&verifier_param, &message, pos, &witness.into())
 }
