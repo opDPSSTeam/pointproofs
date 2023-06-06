@@ -39,31 +39,74 @@ func stringToFr(s string) kbls.Fr {
 	return fr
 }
 
+func messagesToString(messages []kbls.Fr) string {
+	res := ""
+	for _, i := range messages {
+		res += frToString(&i)
+		res += ";"
+	}
+	return res
+}
+
+func generateParams() string {
+	srs := C.GoString(C.generate_params_1())
+	return srs
+}
+
+func commit(srs string, messages []kbls.Fr) string {
+	messagesStr := messagesToString(messages)
+	srsInput := C.CString(srs)
+	defer C.free(unsafe.Pointer(srsInput))
+	messagesInput := C.CString(messagesStr)
+	defer C.free(unsafe.Pointer(messagesInput))
+	output := C.GoString(C.commit_1(srsInput, messagesInput))
+	return output
+}
+
+func open(srs string, messages []kbls.Fr, pos int) string {
+	messagesStr := messagesToString(messages)
+	srsInput := C.CString(srs)
+	defer C.free(unsafe.Pointer(srsInput))
+	messagesInput := C.CString(messagesStr)
+	defer C.free(unsafe.Pointer(messagesInput))
+	posInput := C.int(pos)
+	output := C.GoString(C.open_1(srsInput, messagesInput, posInput))
+	return output
+}
+
+func verify(srs string, commitment string, message kbls.Fr, pos int, witness string) bool {
+	srsInput := C.CString(srs)
+	defer C.free(unsafe.Pointer(srsInput))
+
+	commitmentInput := C.CString(commitment)
+	defer C.free(unsafe.Pointer(commitmentInput))
+
+	messageStr := frToString(&message)
+	messageInput := C.CString(messageStr)
+	defer C.free(unsafe.Pointer(messageInput))
+
+	posInput := C.int(pos)
+
+	witnessInput := C.CString(witness)
+	defer C.free(unsafe.Pointer(witnessInput))
+	output := C.verify_1(srsInput, commitmentInput, messageInput, posInput, witnessInput)
+	return output != 0
+}
+
 func main() {
-	fr1 := kbls.Fr{}
-	if _, err := fr1.Rand(rand.Reader); err != nil {
-		panic("")
+	var messages []kbls.Fr
+	for i := 0; i < 4; i++ {
+		fr := kbls.Fr{}
+		if _, err := fr.Rand(rand.Reader); err != nil {
+			panic("")
+		}
+		fr.ToRed()
+		messages = append(messages, fr)
 	}
-	fr1.ToRed()
-	s1 := frToString(&fr1)
-
-	fr2 := kbls.Fr{}
-	if _, err := fr2.Rand(rand.Reader); err != nil {
-		panic("")
-	}
-	fr2.ToRed()
-	s2 := frToString(&fr2)
-
-	input1 := C.CString(s1)
-	defer C.free(unsafe.Pointer(input1))
-	input2 := C.CString(s2)
-	defer C.free(unsafe.Pointer(input2))
-
-	output := C.GoString(C.fr_plus(input1, input2))
-	fr3 := stringToFr(output)
-
-	AddModFr(&fr1, &fr1, &fr2)
-	if !fr3.Equal(&fr1) {
+	srs := generateParams()
+	commitment := commit(srs, messages)
+	witness := open(srs, messages, 2)
+	if !verify(srs, commitment, messages[2], 2, witness) {
 		panic("")
 	}
 }

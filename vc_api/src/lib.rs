@@ -21,6 +21,80 @@ pub extern "C" fn fr_plus(
     CString::new(res).unwrap().into_raw()
 }
 
+#[no_mangle]
+pub extern "C" fn generate_params_1() -> *const libc::c_char {
+    let mut rng = rand::thread_rng();
+    let srs = commit::gen_params::<rand::rngs::ThreadRng, 4>(&mut rng);
+    let res = util::srs_to_str(srs);
+    CString::new(res).unwrap().into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn commit_1(
+    srs: *const libc::c_char,
+    messages: *const libc::c_char
+) -> *const libc::c_char {
+    let srs = unsafe {
+        CStr::from_ptr(srs).to_str().unwrap()
+    };
+    let messages = unsafe {
+        CStr::from_ptr(messages).to_str().unwrap()
+    };
+    let srs = util::str_to_srs::<4>(srs);
+    let messages = util::str_to_messages(messages);
+    let commitment = commit::commit(srs, messages);
+    let res = util::g1_to_str(commitment);
+    CString::new(res).unwrap().into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn open_1(
+    srs: *const libc::c_char,
+    messages: *const libc::c_char,
+    pos: libc::c_int
+) -> *const libc::c_char {
+    let srs = unsafe {
+        CStr::from_ptr(srs).to_str().unwrap()
+    };
+    let messages = unsafe {
+        CStr::from_ptr(messages).to_str().unwrap()
+    };
+    let srs = util::str_to_srs::<4>(srs);
+    let messages = util::str_to_messages(messages);
+    let witness = commit::open(srs, messages, pos as usize);
+    let res = util::g1_to_str(witness);
+    CString::new(res).unwrap().into_raw()
+}
+
+#[no_mangle]
+pub extern "C" fn verify_1(
+    srs: *const libc::c_char,
+    commitment: *const libc::c_char,
+    message: *const libc::c_char,
+    pos: libc::c_int,
+    witness: *const libc::c_char
+) -> libc::c_int {
+    let srs = unsafe {
+        CStr::from_ptr(srs).to_str().unwrap()
+    };
+    let commitment = unsafe {
+        CStr::from_ptr(commitment).to_str().unwrap()
+    };
+    let message = unsafe {
+        CStr::from_ptr(message).to_str().unwrap()
+    };
+    let witness = unsafe {
+        CStr::from_ptr(witness).to_str().unwrap()
+    };
+
+    let srs = util::str_to_srs::<4>(srs);
+    let commitment = util::str_to_g1(commitment);
+    let message = util::str_to_message(message);
+    let witness = util::str_to_g1(witness);
+    let res = commit::verify(srs, commitment, message, pos as usize, witness);
+    res as libc::c_int
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -36,7 +110,7 @@ mod tests {
     fn test_srs_str() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
         for _ in 0..10 {
-            let srs = commit::gen_params::<4>(&mut rng);
+            let srs = commit::gen_params::<ChaCha20Rng, 4>(&mut rng);
             let s = util::srs_to_str(srs.clone());
             let srs1 = util::str_to_srs(s.as_str());
             assert_eq!(srs, srs1);
@@ -64,7 +138,7 @@ mod tests {
     fn it_works() {
         let mut rng = ChaCha20Rng::from_seed([0u8; 32]);
         for _ in 0..10 {
-            let srs = commit::gen_params::<4>(&mut rng);
+            let srs = commit::gen_params::<ChaCha20Rng, 4>(&mut rng);
             let srs_str = util::srs_to_str(srs);
             let srs = util::str_to_srs::<4>(&srs_str);
             let messages = (0..4)

@@ -6,31 +6,31 @@ use pointproof::CommitmentScheme;
 use pointproof::ProverParam;
 use pointproof::StructuredReferenceString;
 use pointproof::VerifierParam;
-use rand_chacha::ChaCha20Rng;
+use ark_std::rand::Rng;
 
-pub fn gen_params<const N: usize>(
-    rng: &mut ChaCha20Rng
+pub fn gen_params<R: Rng, const N: usize>(
+    rng: &mut R
 ) -> StructuredReferenceString<Bls12_381, N> {
     StructuredReferenceString::<Bls12_381, N>::new_srs_for_testing(rng)
 }
 
 pub fn commit<const N: usize>(
     srs: StructuredReferenceString<Bls12_381, N>,
-    message: Vec<Fr>,
+    messages: Vec<Fr>,
 ) -> <Bls12_381 as PairingEngine>::G1Affine {
     let prover_param: ProverParam<Bls12_381, N> = (&srs).into();
-    Commitment::<Bls12_381, N>::commit(&prover_param, &message)
+    Commitment::<Bls12_381, N>::commit(&prover_param, &messages)
         .commitment
         .into()
 }
 
 pub fn open<const N: usize>(
     srs: StructuredReferenceString<Bls12_381, N>,
-    message: Vec<Fr>,
+    messages: Vec<Fr>,
     pos: usize,
 ) -> <Bls12_381 as PairingEngine>::G1Affine {
     let prover_param: ProverParam<Bls12_381, N> = (&srs).into();
-    Commitment::<Bls12_381, N>::open(&prover_param, &message, pos).into()
+    Commitment::<Bls12_381, N>::open(&prover_param, &messages, pos).into()
 }
 
 pub fn verify<const N: usize>(
