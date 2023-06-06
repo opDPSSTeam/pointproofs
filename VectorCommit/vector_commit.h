@@ -1,5 +1,5 @@
-#ifndef _RUST_DEMO_H_
-#define _RUST_DEMO_H_
+#ifndef _VECTOR_COMMIT_H_
+#define _VECTOR_COMMIT_H_
 
 char* fr_plus(char*, char*);
 char* generate_params(int);

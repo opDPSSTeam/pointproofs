@@ -3,7 +3,7 @@ package VectorCommit
 /*
 #cgo LDFLAGS: -L../target/release -lvc_api
 #include <stdlib.h>
-#include "../lib/rustdemo.h"
+#include "./vector_commit.h"
 */
 import "C"
 
@@ -13,13 +13,15 @@ import (
 	"unsafe"
 )
 
+const MaxLength = 7
+
 type VectorCommit struct {
 	index int
 	srs   string
 }
 
 func New(vectorLen int) *VectorCommit {
-	if vectorLen < 4 || vectorLen > 7 || vectorLen%3 != 1 {
+	if vectorLen < 4 || vectorLen > MaxLength || vectorLen%3 != 1 {
 		return nil
 	}
 	index := (vectorLen - 4) / 3
