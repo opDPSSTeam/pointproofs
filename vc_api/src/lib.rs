@@ -39,7 +39,7 @@ pub extern "C" fn commit(
 }
 
 #[no_mangle]
-pub extern "C" fn open(
+pub extern "C" fn open_(
     number: libc::c_int,
     srs: *const libc::c_char,
     messages: *const libc::c_char,

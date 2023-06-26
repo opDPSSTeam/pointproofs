@@ -78,7 +78,7 @@ func (v *VectorCommit) Open(messages []kbls.Fr, pos int) string {
 	messagesInput := C.CString(messagesStr)
 	defer C.free(unsafe.Pointer(messagesInput))
 	posInput := C.int(pos)
-	output := C.GoString(C.open(indexInput, srsInput, messagesInput, posInput))
+	output := C.GoString(C.open_(indexInput, srsInput, messagesInput, posInput))
 	return output
 }
 

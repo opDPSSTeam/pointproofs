@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/rand"
+	"fmt"
 	kbls "github.com/kilic/bls12-381"
 	"go-demo/VectorCommit"
 )
@@ -23,4 +24,5 @@ func main() {
 	if !vc.Verify(commitment, messages[2], 2, witness) {
 		panic("")
 	}
+	fmt.Println("Success")
 }
