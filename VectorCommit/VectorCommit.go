@@ -9,11 +9,12 @@ import "C"
 
 import (
 	"encoding/base64"
-	kbls "github.com/kilic/bls12-381"
 	"unsafe"
+
+	kbls "github.com/kilic/bls12-381"
 )
 
-const MaxLength = 7
+const MaxLength = 64
 
 type VectorCommit struct {
 	index int

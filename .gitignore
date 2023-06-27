@@ -2,3 +2,4 @@
 Cargo.lock
 /.idea
 go-rust
+.DS_Store

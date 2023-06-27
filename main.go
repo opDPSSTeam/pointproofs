@@ -3,14 +3,15 @@ package main
 import (
 	"crypto/rand"
 	"fmt"
-	kbls "github.com/kilic/bls12-381"
 	"go-demo/VectorCommit"
+
+	kbls "github.com/kilic/bls12-381"
 )
 
-
 func main() {
+	var len = 64
 	var messages []kbls.Fr
-	for i := 0; i < 7; i++ {
+	for i := 0; i < len; i++ {
 		fr := kbls.Fr{}
 		if _, err := fr.Rand(rand.Reader); err != nil {
 			panic("")
@@ -18,11 +19,11 @@ func main() {
 		fr.ToRed()
 		messages = append(messages, fr)
 	}
-	vc := VectorCommit.New(7)
+	vc := VectorCommit.New(len)
 	commitment := vc.Commit(messages)
 	witness := vc.Open(messages, 2)
 	if !vc.Verify(commitment, messages[2], 2, witness) {
 		panic("")
 	}
-	fmt.Println("Success")
+	fmt.Printf("Success for len = %d\n", len)
 }
